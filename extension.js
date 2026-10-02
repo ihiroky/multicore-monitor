@@ -1,4 +1,5 @@
 import St from 'gi://St';
+import Cairo from 'cairo';
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -9,7 +10,6 @@ const PI = 3.141592654;
 const METADATA_NAME = 'multicore-system-monitor';
 const METADATA_UUID = 'multicore-system-monitor@igrek.dev';
 
-const COLOR_BACKGROUND = parseColor('#000000');
 const CORE_COLORS = [
     parseColor('#E03D45'), // grapefruit
     parseColor('#F85C51'), // coral
@@ -196,12 +196,13 @@ export default class MyExtension extends Extension {
     }
 
     _draw() {
-        let [totalWidth, h] = this.area.get_surface_size();
+        let [, h] = this.area.get_surface_size();
         let cr = this.area.get_context();
-        // clear background
-        cr.setSourceRGBA(COLOR_BACKGROUND.r, COLOR_BACKGROUND.g, COLOR_BACKGROUND.b, COLOR_BACKGROUND.a);
-        cr.rectangle(0, 0, totalWidth, h);
-        cr.fill();
+        // Clear the previous frame so the CSS background shows through.
+        cr.save();
+        cr.setOperator(Cairo.Operator.CLEAR);
+        cr.paint();
+        cr.restore();
 
         this._drawCpu(cr, 0, 0, CPU_GRAPH_WIDTH, h);
         if (this.memStats.used) {
